@@ -10,6 +10,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 //go:embed sprites/idle/*
@@ -26,18 +27,33 @@ type Anim struct {
 }
 
 type Game struct {
-	CurrentAnim  *Anim
-	CurrentFrame int
-	Ticks        int
+	CurrentAnim       *Anim
+	CurrentFrame      int
+	Ticks             int
+	ShouldResetToIdle bool
 }
 
 func (g *Game) Update() error {
-	g.Ticks++
-	if g.Ticks >= 10 {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+		g.CurrentAnim = RightClick
 		g.Ticks = 0
-		g.CurrentFrame++
-		if g.CurrentFrame >= len(g.CurrentAnim.Frames) {
-			g.CurrentFrame = 0
+		g.CurrentFrame = 0
+		g.ShouldResetToIdle = true
+		return nil
+	}
+
+	g.Ticks++
+	if g.Ticks < 10 {
+		return nil
+	}
+
+	g.Ticks = 0
+	g.CurrentFrame++
+	if g.CurrentFrame >= len(g.CurrentAnim.Frames) {
+		g.CurrentFrame = 0
+		if g.ShouldResetToIdle {
+			g.CurrentAnim = Idle
+			g.ShouldResetToIdle = false
 		}
 	}
 	return nil
