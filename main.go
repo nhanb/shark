@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"embed"
-	"fmt"
 	_ "image/png"
 	"log"
 	"path/filepath"
@@ -26,11 +25,22 @@ type Anim struct {
 	Frames []*ebiten.Image
 }
 
+type Position struct{ x, y int }
+
 type Game struct {
 	CurrentAnim       *Anim
 	CurrentFrame      int
 	Ticks             int
 	ShouldResetToIdle bool
+	IsDragging        bool
+	StartMouseX       int
+	StartMouseY       int
+}
+
+func GlobalCursorPosition() (x, y int) {
+	cx, cy := ebiten.CursorPosition()
+	wx, wy := ebiten.WindowPosition()
+	return cx + wx, cy + wy
 }
 
 func (g *Game) Update() error {
@@ -40,6 +50,33 @@ func (g *Game) Update() error {
 		g.CurrentFrame = 0
 		g.ShouldResetToIdle = true
 		return nil
+	}
+
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		g.IsDragging = true
+		g.CurrentAnim = Drag
+		g.Ticks = 0
+		g.CurrentFrame = 0
+		g.StartMouseX, g.StartMouseY = GlobalCursorPosition()
+		return nil
+	}
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+		g.IsDragging = false
+		g.CurrentAnim = Idle
+		g.Ticks = 0
+		g.CurrentFrame = 0
+		return nil
+	}
+
+	if g.IsDragging {
+		currentX, currentY := GlobalCursorPosition()
+		diffX := currentX - g.StartMouseX
+		diffY := currentY - g.StartMouseY
+
+		wx, wy := ebiten.WindowPosition()
+		ebiten.SetWindowPosition(wx+diffX, wy+diffY)
+
+		g.StartMouseX, g.StartMouseY = GlobalCursorPosition()
 	}
 
 	g.Ticks++
@@ -60,14 +97,16 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	x, y := ebiten.WindowPosition()
-	ebitenutil.DebugPrint(
-		screen,
-		fmt.Sprintf(
-			"Ticks: %d\nCurrentFrame: %d\nx: %v, y: %v",
-			g.Ticks, g.CurrentFrame, x, y,
-		),
-	)
+	/*
+		x, y := ebiten.WindowPosition()
+			ebitenutil.DebugPrint(
+				screen,
+				fmt.Sprintf(
+					"Ticks: %d\nCurrentFrame: %d\nx: %v, y: %v",
+					g.Ticks, g.CurrentFrame, x, y,
+				),
+			)
+	*/
 	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
 }
 
