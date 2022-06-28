@@ -107,11 +107,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				),
 			)
 	*/
+	debugStr := ""
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		debugStr += "Dragging\n"
+	}
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		debugStr += "Right click\n"
+	}
+	ebitenutil.DebugPrint(screen, debugStr)
 	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
-	return outsideWidth / 2, outsideHeight / 2
+	return outsideWidth / 3, outsideHeight / 3
 }
 
 func NewAnim(sprites embed.FS, subdir string) *Anim {
@@ -141,7 +149,7 @@ func main() {
 	var game Game
 	game.CurrentAnim = Idle
 
-	ebiten.SetWindowSize(360, 360)
+	ebiten.SetWindowSize(500, 540)
 	ebiten.SetWindowTitle("Shark!")
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetScreenTransparent(true)
