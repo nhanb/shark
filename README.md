@@ -14,6 +14,13 @@ Read the source code at your own peril.
 Prebuilt binaries are provided over at
 [Releases](https://github.com/nhanb/shark/releases/latest).
 
+# Artist
+
+The sprites were graciously provided by Mee Way:
+
+![](https://user-images.githubusercontent.com/1446315/176449384-7a06250d-7dfe-4371-b998-707ddbda66b1.jpg)  
+**[Behance][3] | [Facebook][4]**
+
 # License
 
 This program is free software: you can redistribute it and/or modify it under
@@ -28,3 +35,5 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 [1]: https://shimejis.xyz/
 [2]: https://ebiten.org/
+[3]: https://www.behance.net/meeway/projects
+[4]: https://www.facebook.com/meexway
