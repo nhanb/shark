@@ -163,7 +163,7 @@ func main() {
 	var game Game
 	game.CurrentAnim = Idle
 
-	ebiten.SetWindowSize(SPRITE_X*3, SPRITE_Y*3)
+	ebiten.SetWindowSize(SPRITE_X*2, SPRITE_Y*2)
 	ebiten.SetWindowTitle("Shark!")
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetScreenTransparent(true)
