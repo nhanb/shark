@@ -5,7 +5,6 @@ import (
 	"embed"
 	_ "image/png"
 	"log"
-	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -138,12 +137,12 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
 }
 
 func NewAnim(sprites embed.FS, subdir string) *Anim {
-	files, err := sprites.ReadDir(filepath.Join("sprites", subdir))
+	files, err := sprites.ReadDir("sprites/" + subdir)
 	PanicIfErr(err)
 	var frames []*ebiten.Image
 	for _, direntry := range files {
 		fname := direntry.Name()
-		frame, err := sprites.ReadFile(filepath.Join("sprites", subdir, fname))
+		frame, err := sprites.ReadFile("sprites/" + subdir + "/" + fname)
 		PanicIfErr(err)
 		img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(frame))
 		PanicIfErr(err)
