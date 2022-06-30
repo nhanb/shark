@@ -1,4 +1,4 @@
-name: Go
+name: win+mac+linux
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
 
     - name: Install ebiten linux deps
       if: runner.os == 'Linux'
-      run: sudo apt-get install -y libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
+      run: make deps-debian
 
     - run: make
 

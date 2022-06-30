@@ -15,3 +15,7 @@ mac:
 
 clean:
 	rm -f dist/*
+
+# https://ebiten.org/documents/install.html#Debian_/_Ubuntu
+deps-debian:
+	sudo apt install libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
