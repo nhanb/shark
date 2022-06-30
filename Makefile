@@ -10,5 +10,8 @@ linux:
 win:
 	GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-win.exe
 
+mac:
+	GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-mac
+
 clean:
 	rm -f dist/*
