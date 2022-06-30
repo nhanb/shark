@@ -2,9 +2,9 @@
 
 https://user-images.githubusercontent.com/1446315/176439983-091dec3d-bc36-4ae3-8b78-2a2a7f11e90d.mp4
 
-This is a PoC "desktop pet" à la [shimeji][1] using [ebitengine][2]that runs on
-Windows, Linux, and macOS. It currently has only 3 animations: idle (default),
-left-click dragging, and right-click.
+This is a PoC "desktop pet" à la [shimeji][1] using [ebitengine][2] that runs
+on Windows, Linux, and macOS. It currently has only 3 animations: idle
+(default), left-click dragging, and right-click.
 
 Fair warning: I'm a Go noob who mostly has no idea what he's doing.
 Read the source code at your own peril.
