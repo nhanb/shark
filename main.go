@@ -168,6 +168,7 @@ func main() {
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetScreenTransparent(true)
 	ebiten.SetWindowPosition(9999, 9999)
+	ebiten.SetWindowFloating(true)
 	if err := ebiten.RunGame(&game); err != nil {
 		log.Fatal(err)
 	}
