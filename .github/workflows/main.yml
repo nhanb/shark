@@ -1,39 +1,34 @@
-name: Go package
+name: Build
 
 on: [push]
 
 jobs:
   build:
-
     runs-on: ['ubuntu-latest', 'windows-latest', 'macos-latest']
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.18
-
       - name: Build
         run: go build -v ./...
-
       - name: Upload linux
-        if: runner.os == 'Linux'
+        #if: runner.os == 'Linux'
         uses: actions/upload-artifact@v3
         with:
           name: shark-linux
           path: shark
+      #- name: Upload macOS
+        #if: runner.os == 'macOS'
+        #uses: actions/upload-artifact@v3
+        #with:
+          #name: shark-osx
+          #path: shark
 
-      - name: Upload macOS
-        if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v3
-        with:
-          name: shark-osx
-          path: shark
-
-      - name: Upload Windows
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v3
-        with:
-          name: shark-win.exe
-          path: shark.exe
+      #- name: Upload Windows
+        #if: runner.os == 'Windows'
+        #uses: actions/upload-artifact@v3
+        #with:
+          #name: shark-win.exe
+          #path: shark.exe

@@ -22,9 +22,9 @@ tasks:
       cd shark
       export PATH="$PATH:/usr/lib/go-1.18/bin"
       go version
-      go build -o shark-linux
-      GOOS=windows GOARCH=amd64 go build -o shark-win.exe
+      make linux
+      make win
 
 artifacts:
-  - shark/shark-linux
-  - shark/shark-win.exe
+  - shark/dist/shark-linux
+  - shark/dist/shark-win.exe
