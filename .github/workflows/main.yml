@@ -8,49 +8,39 @@ on:
 
 jobs:
 
-  build-linux-win:
-    runs-on: ubuntu-latest
+  build-everything:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
     steps:
     - uses: actions/checkout@v3
-
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.18
-
-    - name: Install ebiten deps
-      run: sudo apt-get install -y libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
-
-    - name: Build
-      run: |
-        make linux
-        make win
-
-    - name: Upload Linux build
-      uses: actions/upload-artifact@v3
-      with:
-        name: Linux build
-        path: dist/shark-linux
-
-    - name: Upload Windows build
-      uses: actions/upload-artifact@v3
-      with:
-        name: Windows build
-        path: dist/shark-win.exe
-
-  build-mac:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v3
-
     - uses: actions/setup-go@v3
       with:
         go-version: 1.18
 
-    - run: make mac
+    - name: Install ebiten linux deps
+      if: runner.os == 'Linux'
+      run: sudo apt-get install -y libc6-dev libglu1-mesa-dev libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
 
-    - name: Upload macOS build
+    - run: make
+
+    - name: Upload ${{ runner.os }} build
       uses: actions/upload-artifact@v3
       with:
-        name: macOS build
-        path: dist/shark-mac
+        name: ${{ runner.os }} shark
+        path: dist/*
+
+    - name: Cross-compile Windows build
+      if: runner.os == 'Linux'
+      run: make win
+
+    - name: Upload cross-compiled Windows build
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Windows shark
+        path: dist/*.exe
