@@ -23,8 +23,8 @@ tasks:
       export PATH="$PATH:/usr/lib/go-1.18/bin"
       go version
       make linux
-      make win
+      make windows
 
 artifacts:
   - shark/dist/shark-linux
-  - shark/dist/shark-win.exe
+  - shark/dist/shark-windows.exe

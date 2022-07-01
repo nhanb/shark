@@ -1,10 +1,7 @@
 name: win+mac+linux
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  push
 
 jobs:
 
@@ -26,7 +23,9 @@ jobs:
       if: runner.os == 'Linux'
       run: make deps-debian
 
-    - run: make
+    - name: Build for ${{ runner.os }}
+      run: make $(echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]')
+      # The `tr` stuff is to convert the string to lowercase
 
     - name: Upload ${{ runner.os }} build
       uses: actions/upload-artifact@v3
@@ -36,7 +35,7 @@ jobs:
 
     - name: Cross-compile Windows build
       if: runner.os == 'Linux'
-      run: make win
+      run: make windows
 
     - name: Upload cross-compiled Windows build
       if: runner.os == 'Linux'
@@ -44,3 +43,17 @@ jobs:
       with:
         name: Windows shark
         path: dist/*.exe
+
+    - name: Upload artifacts to tagged release
+      if: github.ref_type == 'tag'
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+      run: |
+        # Because we have multiple OSes in the build matrix, we need to either
+        # create a new release, or upload to the release if it already exists.
+        if gh release view "$TAG"; then
+          gh release upload "$TAG" dist/*
+        else
+          gh release create "$TAG" dist/* --generate-notes
+        fi

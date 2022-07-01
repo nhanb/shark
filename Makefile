@@ -2,16 +2,16 @@
 # Details here: https://github.com/hajimehoshi/ebiten/issues/1367
 
 build:
-	go build -tags ebitensinglethread -o dist/shark
+	go build -tags ebitensinglethread -o dist/
 
 linux:
 	GOOS=linux GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-linux
 
-win:
-	GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-win.exe
+windows:
+	GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-windows.exe
 
-mac:
-	GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-mac
+macos:
+	GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-macos
 
 clean:
 	rm -f dist/*
