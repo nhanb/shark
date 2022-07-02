@@ -23,6 +23,16 @@ GitHub and sourcehut:
 
 Sourcehut doesn't have macOS builds though.
 
+# Usage
+
+Simply run the provided binary for your OS. Mac & Linux users may need to first
+make the file executable with `chmod +x <file-name>`.
+
+If run from a terminal, use the `-h` argument to see available options.
+Currently there's only a `-size` argument which changes how big your shark will
+be rendered. Windows users can create a shortcut which lets you specify your
+desired arguments.
+
 # Compile from source
 
 - Follow [ebitengine's install guide][6]

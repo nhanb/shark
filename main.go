@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"embed"
+	"flag"
 	_ "image/png"
 	"log"
 
@@ -160,18 +161,24 @@ func init() {
 }
 
 func main() {
+	var sizeFlag int
+	flag.IntVar(
+		&sizeFlag, "size", 2, "Size multiplier: make Gura as big as you want.",
+	)
+	flag.Parse()
+
 	var game Game
 	game.CurrentAnim = Idle
 
-	ebiten.SetWindowSize(SPRITE_X*2, SPRITE_Y*2)
+	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
 	ebiten.SetWindowTitle("Shark!")
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetScreenTransparent(true)
 	ebiten.SetWindowPosition(9999, 9999)
 	ebiten.SetWindowFloating(true)
-	if err := ebiten.RunGame(&game); err != nil {
-		log.Fatal(err)
-	}
+
+	err := ebiten.RunGame(&game)
+	PanicIfErr(err)
 }
 
 func PanicIfErr(err error) {
