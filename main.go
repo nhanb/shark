@@ -31,14 +31,13 @@ type Anim struct {
 type Position struct{ x, y int }
 
 type Game struct {
-	CurrentAnim       *Anim
-	CurrentFrame      int
-	Ticks             int
-	ShouldResetToIdle bool
-	IsDragging        bool
-	PreviousMousePos  Vector
-	WinStartPos       Vector
-	MouseStartPos     Vector
+	CurrentAnim      *Anim
+	CurrentFrame     int
+	Ticks            int
+	IsDragging       bool
+	PreviousMousePos Vector
+	WinStartPos      Vector
+	MouseStartPos    Vector
 }
 
 type Vector struct{ x, y int }
@@ -62,11 +61,11 @@ func GlobalCursorPosition() Vector {
 
 func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		g.CurrentAnim = RightClick
-		g.Ticks = 0
-		g.CurrentFrame = 0
-		g.ShouldResetToIdle = true
-		return nil
+		if g.CurrentAnim == Idle {
+			g.CurrentAnim = RightClick
+			g.Ticks = 0
+			g.CurrentFrame = 0
+		}
 	}
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
@@ -101,25 +100,14 @@ func (g *Game) Update() error {
 	g.CurrentFrame++
 	if g.CurrentFrame >= len(g.CurrentAnim.Frames) {
 		g.CurrentFrame = 0
-		if g.ShouldResetToIdle {
+		if g.CurrentAnim == RightClick {
 			g.CurrentAnim = Idle
-			g.ShouldResetToIdle = false
 		}
 	}
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	/*
-		x, y := ebiten.WindowPosition()
-			ebitenutil.DebugPrint(
-				screen,
-				fmt.Sprintf(
-					"Ticks: %d\nCurrentFrame: %d\nx: %v, y: %v",
-					g.Ticks, g.CurrentFrame, x, y,
-				),
-			)
-	*/
 	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
 	/*
 		debugStr := ""
