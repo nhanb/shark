@@ -1,19 +1,21 @@
 # What
 
-![](https://user-images.githubusercontent.com/1446315/176945811-18387e27-df3e-4303-ad17-e1637e547f04.jpg)
+![](https://user-images.githubusercontent.com/1446315/177188223-ad9759c9-4ef4-44e0-84d8-03cfd46129b8.png)
 
 This is a PoC "desktop pet" à la [shimeji][1] using [ebitengine][2] that runs
 on Windows, Linux, and macOS. It currently has only 3 animations: idle
 (default), left-click dragging, and right-click.
 
-Go [here][7] for a demo video.
+Here's a demo video:
+
+https://user-images.githubusercontent.com/1446315/176439983-091dec3d-bc36-4ae3-8b78-2a2a7f11e90d.mp4
 
 Fair warning: I'm a Go noob who mostly has no idea what he's doing.
 Read the source code at your own peril.
 
 # Download
 
-Official tagged releases are available on [GitHub Releases][5].
+[Download latest version][5] from GitHub Releases.
 
 Newer builds straight from master branch are also available as artifacts on
 GitHub and sourcehut:
@@ -21,7 +23,8 @@ GitHub and sourcehut:
 [![github status](https://github.com/nhanb/shark/actions/workflows/main.yml/badge.svg)][gh]
 [![builds.sr.ht status](https://builds.sr.ht/~nhanb/shark/commits/master.svg)][srht]
 
-Sourcehut doesn't have macOS builds though.
+GitHub requires logging in to download artifacts, while Sourcehut doesn't have
+macOS builds. Such is life.
 
 # Usage
 
@@ -67,7 +70,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 [4]: https://www.facebook.com/meexway
 [5]: https://github.com/nhanb/shark/releases/latest
 [6]: https://ebiten.org/documents/install.html
-[7]: https://user-images.githubusercontent.com/1446315/176439983-091dec3d-bc36-4ae3-8b78-2a2a7f11e90d.mp4
 
 [srht]: https://builds.sr.ht/~nhanb/shark/commits/master
 [gh]: https://github.com/nhanb/shark/actions/workflows/main.yml
