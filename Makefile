@@ -8,7 +8,7 @@ linux:
 	GOOS=linux GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-linux
 
 windows:
-	GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-windows.exe
+	GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-windows.exe -ldflags -H=windowsgui
 
 macos:
 	GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-macos
