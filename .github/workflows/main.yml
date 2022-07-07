@@ -55,5 +55,11 @@ jobs:
         if gh release view "$TAG"; then
           gh release upload "$TAG" dist/*
         else
-          gh release create "$TAG" dist/* --generate-notes
+          # Work around GH being daft:
+          # https://github.com/actions/checkout/issues/290
+          git fetch --force --tags
+
+          git tag -l --format='%(contents)' "$TAG" > RELEASE_NOTES
+          cat RELEASE_NOTES
+          gh release create "$TAG" dist/* -F RELEASE_NOTES
         fi
