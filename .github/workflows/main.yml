@@ -59,7 +59,9 @@ jobs:
           # https://github.com/actions/checkout/issues/290
           git fetch --force --tags
 
-          git tag -l --format='%(contents)' "$TAG" > RELEASE_NOTES
+          echo '```' > RELEASE_NOTES
+          git tag -l --format='%(contents)' "$TAG" >> RELEASE_NOTES
+          echo '```' >> RELEASE_NOTES
           cat RELEASE_NOTES
           gh release create "$TAG" dist/* -F RELEASE_NOTES
         fi
