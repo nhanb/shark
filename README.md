@@ -33,8 +33,33 @@ macOS builds. Such is life.
 
 # Usage
 
-Simply run the provided binary for your OS. Mac & Linux users may need to first
-make the file executable with `chmod +x <file-name>`.
+## Windows & Linux
+
+Simply unzip then run the `shark-windows.exe` or `shark-linux` executable.
+
+## macOS
+
+Since I'm not participating in Apple's $99/yr [protection racket][pr], macOS
+users will need to jump through some hoops to run this program:
+
+- Double click on the downloaded zip file to get the `Shark` app bundle.
+  (skip this step if you downloaded using Safari, which automatically unzips)
+- Drag the `Shark` app bundle into your `Applications` folder.
+- Right-click on `Shark` -> `Open`. You'll see a warning pop-up saying this
+  application was created by an unverified developer (yours truly). Note: you
+  must **right-click instead of double-clicking**, because double-clicking will
+  open a different pop-up which hides the option to open the app.
+
+![](https://user-images.githubusercontent.com/1446315/178136989-247b5d70-ee37-47a6-95b2-a726103b95f3.png)
+
+- Click "Open" anyway.
+- From now on you can launch the Shark application just like any other app,
+  either from Spotlight or from the Applications folder.
+
+In the future I might pay the $99 if I end up writing more macOS apps and this
+becomes enough of a nuisance. Maybe.
+
+## Options
 
 If run from a terminal, use the `-h` argument to see available options.
 Windows users can [create a shortcut][7] to save their desired options.
@@ -90,3 +115,4 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 [srht]: https://builds.sr.ht/~nhanb/shark/commits/master
 [gh]: https://github.com/nhanb/shark/actions/workflows/main.yml
+[pr]: https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution

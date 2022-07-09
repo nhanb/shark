@@ -12,9 +12,10 @@ windows:
 
 macos:
 	GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o dist/shark-macos
+	./scripts/make-mac-bundle.sh dist/shark-macos
 
 clean:
-	rm -f dist/*
+	rm -rf dist/*
 
 # https://ebiten.org/documents/install.html#Debian_/_Ubuntu
 deps-debian:
