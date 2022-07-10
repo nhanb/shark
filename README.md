@@ -56,6 +56,8 @@ users will need to jump through some hoops to run this program:
 - From now on you can launch the Shark application just like any other app,
   either from Spotlight or from the Applications folder.
 
+There's also Apple's official guide [here][apple-guide].
+
 In the future I might pay the $99 if I end up writing more macOS apps and this
 becomes enough of a nuisance. Maybe.
 
@@ -116,3 +118,4 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 [srht]: https://builds.sr.ht/~nhanb/shark/commits/master
 [gh]: https://github.com/nhanb/shark/actions/workflows/main.yml
 [pr]: https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution
+[apple-guide]: https://support.apple.com/en-vn/guide/mac-help/mh40616/mac
