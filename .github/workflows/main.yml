@@ -5,13 +5,58 @@ on:
 
 jobs:
 
-  build-everything:
+  build-linux:
+    runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-10.15]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
 
-    runs-on: ${{ matrix.os }}
+    - name: Install ebiten linux deps
+      run: make deps-debian
+
+    - name: Build for Linux
+      env:
+          TAG: ${{ github.ref_name }}
+      run: make linux
+
+    - name: Zip first to prevent GH Artifacts from removing the executable flag
+      run: |
+        cd dist
+        zip -vr "shark-linux.zip" .
+
+    - name: Upload linux build
+      uses: actions/upload-artifact@v3
+      with:
+        name: Linux shark
+        path: dist/shark-linux.zip
+
+    - name: Upload artifacts to tagged release
+      if: github.ref_type == 'tag'
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+      run: |
+        # Because we have multiple OSes in the build matrix, we need to either
+        # create a new release, or upload to the release if it already exists.
+        if gh release view "$TAG"; then
+          gh release upload "$TAG" dist/*.zip
+        else
+          # Work around GH being daft:
+          # https://github.com/actions/checkout/issues/290
+          git fetch --force --tags
+
+          echo '```' > RELEASE_NOTES
+          git tag -l --format='%(contents)' "$TAG" >> RELEASE_NOTES
+          echo '```' >> RELEASE_NOTES
+          cat RELEASE_NOTES
+          gh release create "$TAG" dist/*.zip -F RELEASE_NOTES
+        fi
+
+  build-windows:
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -23,29 +68,10 @@ jobs:
       if: runner.os == 'Linux'
       run: make deps-debian
 
-    - name: Build for ${{ runner.os }}
-      env:
-          TAG: ${{ github.ref_name }}
-      run: make $(echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]')
-      # The `tr` stuff is to convert the string to lowercase
-
-    - name: Zip first to prevent GH Artifacts from removing the executable flag
-      run: |
-        cd dist
-        zip -vr "shark-${{ runner.os }}.zip" .
-
-    - name: Upload ${{ runner.os }} build
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ runner.os }} shark
-        path: dist/shark-${{ runner.os }}.zip
-
     - name: Cross-compile Windows build
-      if: runner.os == 'Linux'
       run: make windows
 
     - name: Upload cross-compiled Windows build
-      if: runner.os == 'Linux'
       uses: actions/upload-artifact@v3
       with:
         name: Windows shark
@@ -60,7 +86,7 @@ jobs:
         # Because we have multiple OSes in the build matrix, we need to either
         # create a new release, or upload to the release if it already exists.
         if gh release view "$TAG"; then
-          gh release upload "$TAG" dist/*.zip dist/*.exe
+          gh release upload "$TAG" dist/*.exe
         else
           # Work around GH being daft:
           # https://github.com/actions/checkout/issues/290
@@ -70,5 +96,52 @@ jobs:
           git tag -l --format='%(contents)' "$TAG" >> RELEASE_NOTES
           echo '```' >> RELEASE_NOTES
           cat RELEASE_NOTES
-          gh release create "$TAG" dist/*.zip dist/*.exe -F RELEASE_NOTES
+          gh release create "$TAG" dist/*.exe -F RELEASE_NOTES
+        fi
+
+  build-macos:
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
+
+    - name: Build for macOS
+      env:
+          TAG: ${{ github.ref_name }}
+      run: make macos
+
+    - name: Zip first to prevent GH Artifacts from removing the executable flag
+      run: |
+        cd dist
+        zip -vr "shark-macos.zip" .
+
+    - name: Upload macOS build
+      uses: actions/upload-artifact@v3
+      with:
+        name: macOS shark
+        path: dist/shark-macos.zip
+
+    - name: Upload artifacts to tagged release
+      if: github.ref_type == 'tag'
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+      run: |
+        # Because we have multiple OSes in the build matrix, we need to either
+        # create a new release, or upload to the release if it already exists.
+        if gh release view "$TAG"; then
+          gh release upload "$TAG" dist/*.zip
+        else
+          # Work around GH being daft:
+          # https://github.com/actions/checkout/issues/290
+          git fetch --force --tags
+
+          echo '```' > RELEASE_NOTES
+          git tag -l --format='%(contents)' "$TAG" >> RELEASE_NOTES
+          echo '```' >> RELEASE_NOTES
+          cat RELEASE_NOTES
+          gh release create "$TAG" dist/*.zip -F RELEASE_NOTES
         fi
