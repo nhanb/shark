@@ -3,11 +3,12 @@
 ![](https://user-images.githubusercontent.com/1446315/177188223-ad9759c9-4ef4-44e0-84d8-03cfd46129b8.png)
 
 This is a PoC "desktop pet" à la [shimeji][1] using [ebitengine][2] that runs
-on Windows, Linux, and macOS. It currently has only 5 animations:
+on Windows, Linux, and macOS. It currently has these animations:
 
 - `Idle`
 - `Dragging`
 - `Right-click`
+- Randomly `Walk` horizontally
 - After some time has passed (1 hour by default), a `Hungry` animation will be
   activated, during which dragging is disabled.
 - When `Hungry`, right-click to start `Feeding` animation and reset to the

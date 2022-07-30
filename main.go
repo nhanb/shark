@@ -7,6 +7,7 @@ import (
 	"image"
 	_ "image/png"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -32,6 +33,12 @@ var HungrySprites embed.FS
 //go:embed sprites/feeding/*
 var FeedingSprites embed.FS
 
+//go:embed sprites/walk-left/*
+var WalkLeftSprites embed.FS
+
+//go:embed sprites/walk-right/*
+var WalkRightSprites embed.FS
+
 //go:embed icon.png
 var IconFile []byte
 
@@ -42,16 +49,18 @@ type Anim struct {
 type Position struct{ x, y int }
 
 type Game struct {
-	CurrentAnim      *Anim
-	CurrentFrame     int
-	Ticks            int
-	IsDragging       bool
-	PreviousMousePos Vector
-	WinStartPos      Vector
-	MouseStartPos    Vector
-
+	CurrentAnim            *Anim
+	CurrentFrame           int
+	Ticks                  int
+	IsDragging             bool
+	PreviousMousePos       Vector
+	WinStartPos            Vector
+	MouseStartPos          Vector
+	Size                   int
 	LastFed                time.Time
 	NanosecondsUntilHungry time.Duration
+	WalkChance             int
+	StopChance             int
 }
 
 type Vector struct{ x, y int }
@@ -98,19 +107,47 @@ func (g *Game) Update() error {
 		handleNonHungryInputs(g)
 	}
 
+	switch g.CurrentAnim {
+	case WalkLeft:
+		x, y := ebiten.WindowPosition()
+		ebiten.SetWindowPosition(x-g.Size, y)
+	case WalkRight:
+		x, y := ebiten.WindowPosition()
+		ebiten.SetWindowPosition(x+g.Size, y)
+	}
+
 	g.Ticks++
 	if g.Ticks < 10 {
 		return nil
 	}
 	g.Ticks = 0
 	g.CurrentFrame++
+
 	if g.CurrentFrame >= len(g.CurrentAnim.Frames) {
 		g.CurrentFrame = 0
 		if g.CurrentAnim == RightClick || g.CurrentAnim == Feeding {
 			g.CurrentAnim = Idle
 		}
+
+		if g.CurrentAnim == Idle {
+			if randBool(g.WalkChance) {
+				if randBool(50) {
+					g.CurrentAnim = WalkLeft
+				} else {
+					g.CurrentAnim = WalkRight
+				}
+			}
+		} else if g.CurrentAnim == WalkLeft || g.CurrentAnim == WalkRight {
+			if randBool(g.StopChance) {
+				g.CurrentAnim = Idle
+			}
+		}
 	}
 	return nil
+}
+
+func randBool(chance int) bool {
+	return rand.Intn(100) < chance
 }
 
 func handleNonHungryInputs(g *Game) {
@@ -182,7 +219,7 @@ func NewAnim(sprites embed.FS, subdir string) *Anim {
 	return &Anim{frames}
 }
 
-var Idle, RightClick, Drag, Hungry, Feeding *Anim
+var Idle, RightClick, Drag, Hungry, Feeding, WalkLeft, WalkRight *Anim
 
 func init() {
 	Idle = NewAnim(IdleSprites, "idle")
@@ -190,10 +227,14 @@ func init() {
 	RightClick = NewAnim(RightClickSprites, "right-click")
 	Hungry = NewAnim(HungrySprites, "hungry")
 	Feeding = NewAnim(FeedingSprites, "feeding")
+	WalkLeft = NewAnim(WalkLeftSprites, "walk-left")
+	WalkRight = NewAnim(WalkRightSprites, "walk-right")
 }
 
 func main() {
-	var sizeFlag, xFlag, yFlag int
+	rand.Seed(time.Now().UnixNano())
+
+	var sizeFlag, xFlag, yFlag, walkChanceFlag, stopChanceFlag int
 	var secondsUntilHungryFlag int64
 	flag.IntVar(
 		&sizeFlag, "size", 1, "Size multiplier: make Gura as big as you want",
@@ -206,12 +247,17 @@ func main() {
 	)
 	flag.IntVar(&xFlag, "x", 9999, "X position on screen")
 	flag.IntVar(&yFlag, "y", 9999, "Y position on screen")
+	flag.IntVar(&walkChanceFlag, "walk", 5, "chance to start walking, in %")
+	flag.IntVar(&stopChanceFlag, "stop", 40, "chance to stop walking, in %")
 	flag.Parse()
 
 	var game Game
 	game.CurrentAnim = Idle
 	game.LastFed = time.Now()
 	game.NanosecondsUntilHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
+	game.Size = sizeFlag
+	game.WalkChance = walkChanceFlag
+	game.StopChance = stopChanceFlag
 
 	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
 	ebiten.SetWindowTitle("Shark!")
