@@ -1,4 +1,4 @@
-module git.sr.ht/~nhanb/shark
+module go.imnhan.com/shark
 
 go 1.18
 
