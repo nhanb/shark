@@ -61,6 +61,10 @@ type Game struct {
 	NanosecondsUntilHungry time.Duration
 	WalkChance             int
 	StopChance             int
+	X                      int
+	Y                      int
+	MaxX                   int
+	MaxY                   int
 }
 
 type Vector struct{ x, y int }
@@ -83,6 +87,18 @@ func GlobalCursorPosition() Vector {
 }
 
 func (g *Game) Update() error {
+	if g.X < 0 {
+		g.X = 0
+	} else if g.X > g.MaxX {
+		g.X = g.MaxX
+	}
+	if g.Y < 0 {
+		g.Y = 0
+	} else if g.Y > g.MaxY {
+		g.Y = g.MaxY
+	}
+	ebiten.SetWindowPosition(g.X, g.Y)
+
 	isHungry := false
 
 	if time.Now().Sub(g.LastFed) >= g.NanosecondsUntilHungry {
@@ -109,11 +125,9 @@ func (g *Game) Update() error {
 
 	switch g.CurrentAnim {
 	case WalkLeft:
-		x, y := ebiten.WindowPosition()
-		ebiten.SetWindowPosition(x-g.Size, y)
+		g.X -= g.Size
 	case WalkRight:
-		x, y := ebiten.WindowPosition()
-		ebiten.SetWindowPosition(x+g.Size, y)
+		g.X += g.Size
 	}
 
 	g.Ticks++
@@ -178,7 +192,8 @@ func handleNonHungryInputs(g *Game) {
 	mousePos := GlobalCursorPosition()
 	if g.IsDragging && mousePos != g.PreviousMousePos {
 		newWinPos := g.WinStartPos.Add(mousePos.Subtract(g.MouseStartPos))
-		ebiten.SetWindowPosition(newWinPos.x, newWinPos.y)
+		g.X = newWinPos.x
+		g.Y = newWinPos.y
 	}
 
 	g.PreviousMousePos = mousePos
@@ -258,12 +273,17 @@ func main() {
 	game.Size = sizeFlag
 	game.WalkChance = walkChanceFlag
 	game.StopChance = stopChanceFlag
+	game.X = xFlag
+	game.Y = yFlag
+
+	screenX, screenY := ebiten.ScreenSizeInFullscreen()
+	game.MaxX = screenX - SPRITE_X*game.Size
+	game.MaxY = screenY - SPRITE_Y*game.Size
 
 	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
 	ebiten.SetWindowTitle("Shark!")
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetScreenTransparent(true)
-	ebiten.SetWindowPosition(xFlag, yFlag)
 	ebiten.SetWindowFloating(true)
 
 	AppIcon, _, iconerr := image.Decode(bytes.NewReader(IconFile))
