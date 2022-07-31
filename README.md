@@ -94,7 +94,7 @@ Do let me know if it works on your FreeBSD desktop!
 The sprites were graciously provided by Mee Way:
 
 ![](https://user-images.githubusercontent.com/1446315/176449384-7a06250d-7dfe-4371-b998-707ddbda66b1.jpg)  
-**[Behance][3] | [Facebook][4]**
+**[Twitter][8] | [Behance][3] | [Facebook][4]**
 
 # License
 
@@ -115,6 +115,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 [5]: https://github.com/nhanb/shark/releases/latest
 [6]: https://ebiten.org/documents/install.html
 [7]: https://superuser.com/questions/29569/how-to-add-command-line-options-to-shortcut
+[8]: https://twitter.com/mee_way
 
 [srht]: https://builds.sr.ht/~nhanb/shark/commits/master
 [gh]: https://github.com/nhanb/shark/actions/workflows/main.yml
