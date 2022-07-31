@@ -70,21 +70,31 @@ Windows users can [create a shortcut][7] to save their desired options.
 Here are the currently supported options:
 
 ```
--hungry int
-      The number of seconds it takes for Gura to go hungry (default 3600)
--size int
-      Size multiplier: make Gura as big as you want (default 1)
--x int
-      X position on screen (default 9999)
--y int
-      Y position on screen (default 9999)
+  -hungry int
+        The number of seconds it takes for Gura to go hungry (default 3600)
+  -size int
+        Size multiplier: make Gura as big as you want (default 1)
+  -stop int
+        chance to stop walking, in % (default 40)
+  -walk int
+        chance to start walking, in % (default 5)
+  -x int
+        X position on screen (default 9999)
+  -y int
+        Y position on screen (default 9999)
 ```
 
 # Compile from source
 
+- Clone this repo
 - Follow [ebitengine's install guide][6]
 - Run: `go build -tags ebitensinglethread -o dist/`
 - Your compiled binary should now be in `./dist/`
+
+Alternatively, if you already have Go, you can run `go run
+go.imnhan.com/shark@latest` to compile and run the latest version without
+manually cloning the repo. You still need to install ebiten's dependencies
+first though.
 
 Apparently it should compile on FreeBSD too but I haven't tried that.
 Do let me know if it works on your FreeBSD desktop!
