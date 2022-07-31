@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"flag"
+	"fmt"
 	"image"
 	_ "image/png"
 	"log"
@@ -54,13 +55,16 @@ type Game struct {
 	Ticks                  int
 	IsDragging             bool
 	PreviousMousePos       Vector
-	WinStartPos            Vector
+	SpriteStartPos         Vector
 	MouseStartPos          Vector
 	Size                   int
 	LastFed                time.Time
 	NanosecondsUntilHungry time.Duration
 	WalkChance             int
 	StopChance             int
+	ScreenSize             Vector
+	SpritePos              Vector
+	op                     *ebiten.DrawImageOptions
 }
 
 type Vector struct{ x, y int }
@@ -76,12 +80,6 @@ func (this Vector) Subtract(that Vector) Vector {
 	return Vector{this.x - that.x, this.y - that.y}
 }
 
-func GlobalCursorPosition() Vector {
-	cx, cy := ebiten.CursorPosition()
-	wx, wy := ebiten.WindowPosition()
-	return Vector{cx + wx, cy + wy}
-}
-
 func (g *Game) Update() error {
 	isHungry := false
 
@@ -94,7 +92,7 @@ func (g *Game) Update() error {
 			g.Ticks = 0
 			g.CurrentFrame = 0
 			return nil
-		} else if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+		} else if IsSpriteJustPressed(g, ebiten.MouseButtonRight) {
 			g.CurrentAnim = Feeding
 			g.Ticks = 0
 			g.CurrentFrame = 0
@@ -150,8 +148,20 @@ func randBool(chance int) bool {
 	return rand.Intn(100) < chance
 }
 
+func IsSpriteJustPressed(g *Game, btn ebiten.MouseButton) bool {
+	if !inpututil.IsMouseButtonJustPressed(btn) {
+		return false
+	}
+	minX := g.SpritePos.x
+	minY := g.SpritePos.y
+	maxX := g.SpritePos.x + SPRITE_X*g.Size
+	maxY := g.SpritePos.y + SPRITE_Y*g.Size
+	x, y := ebiten.CursorPosition()
+	return x >= minX && x <= maxX && y >= minY && y <= maxY
+}
+
 func handleNonHungryInputs(g *Game) {
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+	if IsSpriteJustPressed(g, ebiten.MouseButtonRight) {
 		if g.CurrentAnim == Idle {
 			g.CurrentAnim = RightClick
 			g.Ticks = 0
@@ -159,14 +169,14 @@ func handleNonHungryInputs(g *Game) {
 		}
 	}
 
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+	if IsSpriteJustPressed(g, ebiten.MouseButtonLeft) {
 		g.IsDragging = true
 		g.CurrentAnim = Drag
 		g.Ticks = 0
 		g.CurrentFrame = 0
-		g.PreviousMousePos = GlobalCursorPosition()
-		g.WinStartPos = CreateVector(ebiten.WindowPosition())
-		g.MouseStartPos = GlobalCursorPosition()
+		g.PreviousMousePos = CreateVector(ebiten.CursorPosition())
+		g.SpriteStartPos = g.SpritePos
+		g.MouseStartPos = CreateVector(ebiten.CursorPosition())
 	}
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		g.IsDragging = false
@@ -175,17 +185,18 @@ func handleNonHungryInputs(g *Game) {
 		g.CurrentFrame = 0
 	}
 
-	mousePos := GlobalCursorPosition()
+	mousePos := CreateVector(ebiten.CursorPosition())
 	if g.IsDragging && mousePos != g.PreviousMousePos {
-		newWinPos := g.WinStartPos.Add(mousePos.Subtract(g.MouseStartPos))
-		ebiten.SetWindowPosition(newWinPos.x, newWinPos.y)
+		g.SpritePos = g.SpriteStartPos.Add(mousePos.Subtract(g.MouseStartPos))
 	}
 
 	g.PreviousMousePos = mousePos
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
+	g.op.GeoM.Reset()
+	g.op.GeoM.Translate(float64(g.SpritePos.x), float64(g.SpritePos.y))
+	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], g.op)
 	/*
 		debugStr := ""
 		debugStr += fmt.Sprintf("%v\n", g.Ticks)
@@ -201,7 +212,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
-	return SPRITE_X, SPRITE_Y
+	return outsideWidth, outsideHeight
 }
 
 func NewAnim(sprites embed.FS, subdir string) *Anim {
@@ -258,13 +269,26 @@ func main() {
 	game.Size = sizeFlag
 	game.WalkChance = walkChanceFlag
 	game.StopChance = stopChanceFlag
+	game.ScreenSize = CreateVector(ebiten.ScreenSizeInFullscreen())
 
-	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
+	if xFlag > game.ScreenSize.x-SPRITE_X {
+		xFlag = game.ScreenSize.x - SPRITE_X
+	}
+	if yFlag > game.ScreenSize.x-SPRITE_Y {
+		yFlag = game.ScreenSize.y - SPRITE_Y
+	}
+	game.SpritePos = Vector{xFlag, yFlag}
+
+	game.op = &ebiten.DrawImageOptions{}
+	game.op.GeoM.Translate(float64(game.SpritePos.x), float64(game.SpritePos.y))
+	fmt.Println(game.SpritePos)
+
 	ebiten.SetWindowTitle("Shark!")
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetScreenTransparent(true)
-	ebiten.SetWindowPosition(xFlag, yFlag)
 	ebiten.SetWindowFloating(true)
+	ebiten.SetWindowSize(game.ScreenSize.x, game.ScreenSize.y)
+	ebiten.SetWindowPosition(0, 0)
 
 	AppIcon, _, iconerr := image.Decode(bytes.NewReader(IconFile))
 	PanicIfErr(iconerr)
