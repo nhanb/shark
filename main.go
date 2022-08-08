@@ -194,6 +194,7 @@ func handleNonHungryInputs(g *Game) {
 		newWinPos := g.WinStartPos.Add(mousePos.Subtract(g.MouseStartPos))
 		g.X = newWinPos.x
 		g.Y = newWinPos.y
+		ebiten.SetWindowPosition(g.X, g.Y)
 	}
 
 	g.PreviousMousePos = mousePos
