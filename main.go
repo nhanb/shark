@@ -11,7 +11,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"go.imnhan.com/shark/must"
 )
 
@@ -51,22 +50,6 @@ type Position struct{ x, y int }
 var DurationTillHungry time.Duration
 var WalkChance, StopChance int
 
-type Game struct {
-	CurrentAnim      *Anim
-	CurrentFrame     int
-	Ticks            int
-	IsDragging       bool
-	PreviousMousePos Vector
-	WinStartPos      Vector
-	MouseStartPos    Vector
-	Size             int
-	LastFed          time.Time
-	X                int
-	Y                int
-	MaxX             int
-	MaxY             int
-}
-
 type Vector struct{ x, y int }
 
 func CreateVector(x, y int) Vector {
@@ -86,138 +69,8 @@ func GlobalCursorPosition() Vector {
 	return Vector{cx + wx, cy + wy}
 }
 
-func (g *Game) Update() error {
-	if g.X < 0 {
-		g.X = 0
-	} else if g.X > g.MaxX {
-		g.X = g.MaxX
-	}
-	if g.Y < 0 {
-		g.Y = 0
-	} else if g.Y > g.MaxY {
-		g.Y = g.MaxY
-	}
-	ebiten.SetWindowPosition(g.X, g.Y)
-
-	isHungry := false
-
-	if time.Now().Sub(g.LastFed) >= DurationTillHungry {
-		// The only allowed interaction when hungry is right-click to feed.
-		isHungry = true
-		g.IsDragging = false
-		if g.CurrentAnim != Hungry {
-			g.CurrentAnim = Hungry
-			g.Ticks = 0
-			g.CurrentFrame = 0
-			return nil
-		} else if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-			g.CurrentAnim = Feeding
-			g.Ticks = 0
-			g.CurrentFrame = 0
-			g.LastFed = time.Now()
-			return nil
-		}
-	}
-
-	if !isHungry && g.CurrentAnim != Feeding {
-		handleNonHungryInputs(g)
-	}
-
-	switch g.CurrentAnim {
-	case WalkLeft:
-		g.X -= g.Size
-	case WalkRight:
-		g.X += g.Size
-	}
-
-	g.Ticks++
-	if g.Ticks < 10 {
-		return nil
-	}
-	g.Ticks = 0
-	g.CurrentFrame++
-
-	if g.CurrentFrame >= len(g.CurrentAnim.Frames) {
-		g.CurrentFrame = 0
-		if g.CurrentAnim == RightClick || g.CurrentAnim == Feeding {
-			g.CurrentAnim = Idle
-		}
-
-		if g.CurrentAnim == Idle {
-			if randBool(WalkChance) {
-				if randBool(50) {
-					g.CurrentAnim = WalkLeft
-				} else {
-					g.CurrentAnim = WalkRight
-				}
-			}
-		} else if g.CurrentAnim == WalkLeft || g.CurrentAnim == WalkRight {
-			if randBool(StopChance) {
-				g.CurrentAnim = Idle
-			}
-		}
-	}
-	return nil
-}
-
 func randBool(chance int) bool {
 	return rand.Intn(100) < chance
-}
-
-func handleNonHungryInputs(g *Game) {
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		if g.CurrentAnim == Idle {
-			g.CurrentAnim = RightClick
-			g.Ticks = 0
-			g.CurrentFrame = 0
-		}
-	}
-
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		g.IsDragging = true
-		g.CurrentAnim = Drag
-		g.Ticks = 0
-		g.CurrentFrame = 0
-		g.PreviousMousePos = GlobalCursorPosition()
-		g.WinStartPos = CreateVector(ebiten.WindowPosition())
-		g.MouseStartPos = GlobalCursorPosition()
-	}
-	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-		g.IsDragging = false
-		g.CurrentAnim = Idle
-		g.Ticks = 0
-		g.CurrentFrame = 0
-	}
-
-	mousePos := GlobalCursorPosition()
-	if g.IsDragging && mousePos != g.PreviousMousePos {
-		newWinPos := g.WinStartPos.Add(mousePos.Subtract(g.MouseStartPos))
-		g.X = newWinPos.x
-		g.Y = newWinPos.y
-		ebiten.SetWindowPosition(g.X, g.Y)
-	}
-
-	g.PreviousMousePos = mousePos
-}
-
-func (g *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(g.CurrentAnim.Frames[g.CurrentFrame], nil)
-	/*
-		debugStr := ""
-		debugStr += fmt.Sprintf("%v\n", g.Ticks)
-		debugStr += fmt.Sprintf("%v\n", g.LastFed)
-		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-			debugStr += "Dragging\n"
-		}
-		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-			debugStr += "Right click\n"
-		}
-		ebitenutil.DebugPrint(screen, debugStr)
-	*/
-}
-
-func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
-	return SPRITE_X, SPRITE_Y
 }
 
 func NewAnim(sprites embed.FS, subdir string) *Anim {
@@ -245,7 +98,7 @@ func init() {
 }
 
 func main() {
-	var sizeFlag, xFlag, yFlag, walkChanceFlag, stopChanceFlag int
+	var sizeFlag, xFlag, yFlag int
 	var secondsUntilHungryFlag int64
 	flag.IntVar(
 		&sizeFlag, "size", 1, "Size multiplier: make Gura as big as you want",
@@ -258,24 +111,13 @@ func main() {
 	)
 	flag.IntVar(&xFlag, "x", 9999, "X position on screen")
 	flag.IntVar(&yFlag, "y", 9999, "Y position on screen")
-	flag.IntVar(&walkChanceFlag, "walk", 5, "chance to start walking, in %")
-	flag.IntVar(&stopChanceFlag, "stop", 40, "chance to stop walking, in %")
+	flag.IntVar(&WalkChance, "walk", 5, "chance to start walking, in %")
+	flag.IntVar(&StopChance, "stop", 40, "chance to stop walking, in %")
 	flag.Parse()
 
-	var game Game
-	game.CurrentAnim = Idle
-	game.LastFed = time.Now()
 	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
-	game.Size = sizeFlag
-	WalkChance = walkChanceFlag
-	StopChance = stopChanceFlag
-	game.X = xFlag
-	game.Y = yFlag
 
-	screenX, screenY := ebiten.ScreenSizeInFullscreen()
-	game.MaxX = screenX - SPRITE_X*game.Size
-	game.MaxY = screenY - SPRITE_Y*game.Size
-
+	ebiten.SetWindowPosition(xFlag, yFlag)
 	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
 	ebiten.SetWindowTitle("Shark!")
 	ebiten.SetWindowDecorated(false)
