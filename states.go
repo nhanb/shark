@@ -40,6 +40,8 @@ func (sm *StateMachine) SetState(s State) {
 func (sm *StateMachine) Update() error {
 	now := time.Now()
 
+	// If enough time has passed, force enter hungry state,
+	// otherwise process state-specific logic as usual.
 	if now.Sub(sm.lastFed) >= DurationTillHungry {
 		sm.SetState(&StateHungry{})
 		sm.lastFed = now
@@ -78,9 +80,6 @@ type State interface {
 	EndAnimHook(sm *StateMachine)
 }
 
-type StateWalkL struct{}
-type StateWalkR struct{}
-
 type StateIdle struct{}
 
 func (s *StateIdle) Enter(sm *StateMachine) { sm.SetAnim(Idle) }
@@ -94,7 +93,16 @@ func (s *StateIdle) Update(sm *StateMachine) {
 		return
 	}
 }
-func (s *StateIdle) EndAnimHook(sm *StateMachine) {}
+func (s *StateIdle) EndAnimHook(sm *StateMachine) {
+	if randBool(WalkChance) {
+		if randBool(50) {
+			sm.SetState(&StateWalkL{})
+		} else {
+			sm.SetState(&StateWalkR{})
+		}
+		return
+	}
+}
 
 type StateDrag struct {
 	PreviousMousePos Vector
@@ -149,4 +157,24 @@ func (s *StateFeed) Enter(sm *StateMachine)  { sm.SetAnim(Feeding) }
 func (s *StateFeed) Update(sm *StateMachine) {}
 func (s *StateFeed) EndAnimHook(sm *StateMachine) {
 	sm.SetState(&StateIdle{})
+}
+
+type StateWalkL struct{}
+
+func (s *StateWalkL) Enter(sm *StateMachine)  { sm.SetAnim(WalkLeft) }
+func (s *StateWalkL) Update(sm *StateMachine) {}
+func (s *StateWalkL) EndAnimHook(sm *StateMachine) {
+	if randBool(StopChance) {
+		sm.SetState(&StateIdle{})
+	}
+}
+
+type StateWalkR struct{}
+
+func (s *StateWalkR) Enter(sm *StateMachine)  { sm.SetAnim(WalkRight) }
+func (s *StateWalkR) Update(sm *StateMachine) {}
+func (s *StateWalkR) EndAnimHook(sm *StateMachine) {
+	if randBool(StopChance) {
+		sm.SetState(&StateIdle{})
+	}
 }

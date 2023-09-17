@@ -49,6 +49,7 @@ type Anim struct {
 type Position struct{ x, y int }
 
 var DurationTillHungry time.Duration
+var WalkChance, StopChance int
 
 type Game struct {
 	CurrentAnim      *Anim
@@ -60,8 +61,6 @@ type Game struct {
 	MouseStartPos    Vector
 	Size             int
 	LastFed          time.Time
-	WalkChance       int
-	StopChance       int
 	X                int
 	Y                int
 	MaxX             int
@@ -145,7 +144,7 @@ func (g *Game) Update() error {
 		}
 
 		if g.CurrentAnim == Idle {
-			if randBool(g.WalkChance) {
+			if randBool(WalkChance) {
 				if randBool(50) {
 					g.CurrentAnim = WalkLeft
 				} else {
@@ -153,7 +152,7 @@ func (g *Game) Update() error {
 				}
 			}
 		} else if g.CurrentAnim == WalkLeft || g.CurrentAnim == WalkRight {
-			if randBool(g.StopChance) {
+			if randBool(StopChance) {
 				g.CurrentAnim = Idle
 			}
 		}
@@ -268,8 +267,8 @@ func main() {
 	game.LastFed = time.Now()
 	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
 	game.Size = sizeFlag
-	game.WalkChance = walkChanceFlag
-	game.StopChance = stopChanceFlag
+	WalkChance = walkChanceFlag
+	StopChance = stopChanceFlag
 	game.X = xFlag
 	game.Y = yFlag
 
