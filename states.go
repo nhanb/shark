@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type StateMachine struct {
@@ -13,21 +14,23 @@ type StateMachine struct {
 }
 
 func NewStateMachine() *StateMachine {
-	sm := StateMachine{state: StateIdle{}}
-	sm.state.Enter(&sm)
+	sm := StateMachine{}
+	sm.SetState(&StateIdle{})
 	return &sm
 }
 
-func (sm *StateMachine) setAnim(anim *Anim) {
+func (sm *StateMachine) SetAnim(anim *Anim) {
 	sm.anim = anim
 	sm.animFrameCount = len(anim.Frames)
+	sm.frameIdx = 0
+	sm.ticks = 0
 }
 func (sm *StateMachine) Frame() *ebiten.Image {
 	return sm.anim.Frames[sm.frameIdx]
 }
-
-func (sm *StateMachine) HandleInput() {
-	sm.state.HandleInput(sm)
+func (sm *StateMachine) SetState(s State) {
+	sm.state = s
+	sm.state.Enter(sm)
 }
 func (sm *StateMachine) Update() error {
 	sm.state.Update(sm)
@@ -55,18 +58,46 @@ func (sm *StateMachine) Layout(ow, oh int) (sw, sh int) {
 
 type State interface {
 	Enter(sm *StateMachine)
-	HandleInput(sm *StateMachine)
 	Update(sm *StateMachine)
 }
 
-type StateIdle struct{}
-type StateDrag struct{}
 type StateRClick struct{}
 type StateHungry struct{}
 type StateFeed struct{}
 type StateWalkL struct{}
 type StateWalkR struct{}
 
-func (s StateIdle) Enter(sm *StateMachine)       { sm.setAnim(Idle) }
-func (s StateIdle) HandleInput(sm *StateMachine) {}
-func (s StateIdle) Update(sm *StateMachine)      {}
+type StateIdle struct{}
+
+func (s *StateIdle) Enter(sm *StateMachine) { sm.SetAnim(Idle) }
+func (s *StateIdle) Update(sm *StateMachine) {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		sm.SetState(&StateDrag{})
+		return
+	}
+}
+
+type StateDrag struct {
+	PreviousMousePos Vector
+	WinStartPos      Vector
+	MouseStartPos    Vector
+}
+
+func (s *StateDrag) Enter(sm *StateMachine) {
+	sm.SetAnim(Drag)
+	s.PreviousMousePos = GlobalCursorPosition()
+	s.WinStartPos = CreateVector(ebiten.WindowPosition())
+	s.MouseStartPos = GlobalCursorPosition()
+}
+func (s *StateDrag) Update(sm *StateMachine) {
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+		sm.SetState(&StateIdle{})
+		return
+	}
+	mousePos := GlobalCursorPosition()
+	if mousePos != s.PreviousMousePos {
+		winPos := s.WinStartPos.Add(mousePos.Subtract(s.MouseStartPos))
+		ebiten.SetWindowPosition(winPos.x, winPos.y)
+	}
+	s.PreviousMousePos = mousePos
+}
