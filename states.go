@@ -89,12 +89,7 @@ func (s *StateIdle) Update(sm *StateMachine) {
 }
 func (s *StateIdle) EndAnimHook(sm *StateMachine) {
 	if randBool(WalkChance) {
-		if randBool(50) {
-			sm.SetState(&StateWalkL{})
-		} else {
-			sm.SetState(&StateWalkR{})
-		}
-		return
+		sm.SetState(&StateWalk{isLeft: randBool(50)})
 	}
 }
 
@@ -178,10 +173,18 @@ func (s *StateFeed) EndAnimHook(sm *StateMachine) {
 	sm.lastFed = time.Now()
 }
 
-type StateWalkL struct{}
+type StateWalk struct {
+	isLeft bool
+}
 
-func (s *StateWalkL) Enter(sm *StateMachine) { sm.SetAnim(WalkLeft) }
-func (s *StateWalkL) Update(sm *StateMachine) {
+func (s *StateWalk) Enter(sm *StateMachine) {
+	if s.isLeft {
+		sm.SetAnim(WalkLeft)
+	} else {
+		sm.SetAnim(WalkRight)
+	}
+}
+func (s *StateWalk) Update(sm *StateMachine) {
 	if checkHunger(sm) {
 		return
 	}
@@ -194,29 +197,7 @@ func (s *StateWalkL) Update(sm *StateMachine) {
 		return
 	}
 }
-func (s *StateWalkL) EndAnimHook(sm *StateMachine) {
-	if randBool(StopChance) {
-		sm.SetState(&StateIdle{})
-	}
-}
-
-type StateWalkR struct{}
-
-func (s *StateWalkR) Enter(sm *StateMachine) { sm.SetAnim(WalkRight) }
-func (s *StateWalkR) Update(sm *StateMachine) {
-	if checkHunger(sm) {
-		return
-	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		sm.SetState(&StateDrag{})
-		return
-	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		sm.SetState(&StateRClick{})
-		return
-	}
-}
-func (s *StateWalkR) EndAnimHook(sm *StateMachine) {
+func (s *StateWalk) EndAnimHook(sm *StateMachine) {
 	if randBool(StopChance) {
 		sm.SetState(&StateIdle{})
 	}
