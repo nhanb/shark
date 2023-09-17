@@ -38,16 +38,7 @@ func (sm *StateMachine) SetState(s State) {
 	sm.state.Enter(sm)
 }
 func (sm *StateMachine) Update() error {
-	now := time.Now()
-
-	// If enough time has passed, force enter hungry state,
-	// otherwise process state-specific logic as usual.
-	if now.Sub(sm.lastFed) >= DurationTillHungry {
-		sm.SetState(&StateHungry{})
-		sm.lastFed = now
-	} else {
-		sm.state.Update(sm)
-	}
+	sm.state.Update(sm)
 
 	// Advance to next animation frame
 	sm.ticks += 1
@@ -84,6 +75,9 @@ type StateIdle struct{}
 
 func (s *StateIdle) Enter(sm *StateMachine) { sm.SetAnim(Idle) }
 func (s *StateIdle) Update(sm *StateMachine) {
+	if checkHunger(sm) {
+		return
+	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		sm.SetState(&StateDrag{})
 		return
@@ -117,6 +111,9 @@ func (s *StateDrag) Enter(sm *StateMachine) {
 	s.MouseStartPos = GlobalCursorPosition()
 }
 func (s *StateDrag) Update(sm *StateMachine) {
+	if checkHunger(sm) {
+		return
+	}
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		sm.SetState(&StateIdle{})
 		return
@@ -136,6 +133,9 @@ func (s *StateRClick) Enter(sm *StateMachine) {
 	sm.SetAnim(RightClick)
 }
 func (s *StateRClick) Update(sm *StateMachine) {
+	if checkHunger(sm) {
+		return
+	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		sm.SetState(&StateDrag{})
 		return
@@ -160,18 +160,31 @@ func (s *StateHungry) Update(sm *StateMachine) {
 }
 func (s *StateHungry) EndAnimHook(sm *StateMachine) {}
 
+func checkHunger(sm *StateMachine) (isHungry bool) {
+	now := time.Now()
+	if now.Sub(sm.lastFed) >= DurationTillHungry {
+		sm.SetState(&StateHungry{})
+		return true
+	}
+	return false
+}
+
 type StateFeed struct{}
 
 func (s *StateFeed) Enter(sm *StateMachine)  { sm.SetAnim(Feed) }
 func (s *StateFeed) Update(sm *StateMachine) {}
 func (s *StateFeed) EndAnimHook(sm *StateMachine) {
 	sm.SetState(&StateIdle{})
+	sm.lastFed = time.Now()
 }
 
 type StateWalkL struct{}
 
 func (s *StateWalkL) Enter(sm *StateMachine) { sm.SetAnim(WalkLeft) }
 func (s *StateWalkL) Update(sm *StateMachine) {
+	if checkHunger(sm) {
+		return
+	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		sm.SetState(&StateDrag{})
 		return
@@ -191,6 +204,9 @@ type StateWalkR struct{}
 
 func (s *StateWalkR) Enter(sm *StateMachine) { sm.SetAnim(WalkRight) }
 func (s *StateWalkR) Update(sm *StateMachine) {
+	if checkHunger(sm) {
+		return
+	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		sm.SetState(&StateDrag{})
 		return
