@@ -29,8 +29,8 @@ var DragSprites embed.FS
 //go:embed sprites/hungry/*
 var HungrySprites embed.FS
 
-//go:embed sprites/feeding/*
-var FeedingSprites embed.FS
+//go:embed sprites/feed/*
+var FeedSprites embed.FS
 
 //go:embed sprites/walk-left/*
 var WalkLeftSprites embed.FS
@@ -85,14 +85,14 @@ func NewAnim(sprites embed.FS, subdir string) *Anim {
 	return &Anim{frames}
 }
 
-var Idle, RightClick, Drag, Hungry, Feeding, WalkLeft, WalkRight *Anim
+var Idle, RightClick, Drag, Hungry, Feed, WalkLeft, WalkRight *Anim
 
 func init() {
 	Idle = NewAnim(IdleSprites, "idle")
 	Drag = NewAnim(DragSprites, "drag")
 	RightClick = NewAnim(RightClickSprites, "right-click")
 	Hungry = NewAnim(HungrySprites, "hungry")
-	Feeding = NewAnim(FeedingSprites, "feeding")
+	Feed = NewAnim(FeedSprites, "feed")
 	WalkLeft = NewAnim(WalkLeftSprites, "walk-left")
 	WalkRight = NewAnim(WalkRightSprites, "walk-right")
 }

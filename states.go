@@ -162,7 +162,7 @@ func (s *StateHungry) EndAnimHook(sm *StateMachine) {}
 
 type StateFeed struct{}
 
-func (s *StateFeed) Enter(sm *StateMachine)  { sm.SetAnim(Feeding) }
+func (s *StateFeed) Enter(sm *StateMachine)  { sm.SetAnim(Feed) }
 func (s *StateFeed) Update(sm *StateMachine) {}
 func (s *StateFeed) EndAnimHook(sm *StateMachine) {
 	sm.SetState(&StateIdle{})
