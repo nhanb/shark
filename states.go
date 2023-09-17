@@ -35,17 +35,21 @@ func (sm *StateMachine) SetState(s State) {
 func (sm *StateMachine) Update() error {
 	sm.state.Update(sm)
 
-	// Advance or reset animation frame
+	// Advance to next animation frame
 	sm.ticks += 1
 	if sm.ticks < 10 {
 		return nil
 	}
 	sm.ticks = 0
-	if sm.frameIdx >= sm.animFrameCount-1 {
-		sm.frameIdx = 0
-	} else {
+	if sm.frameIdx < sm.animFrameCount-1 {
 		sm.frameIdx += 1
+		return nil
 	}
+
+	// At end of current anim, restart the animation,
+	// execute state-specific hook if any.
+	sm.frameIdx = 0
+	sm.state.EndAnimHook(sm)
 	return nil
 }
 
@@ -59,9 +63,9 @@ func (sm *StateMachine) Layout(ow, oh int) (sw, sh int) {
 type State interface {
 	Enter(sm *StateMachine)
 	Update(sm *StateMachine)
+	EndAnimHook(sm *StateMachine)
 }
 
-type StateRClick struct{}
 type StateHungry struct{}
 type StateFeed struct{}
 type StateWalkL struct{}
@@ -75,7 +79,12 @@ func (s *StateIdle) Update(sm *StateMachine) {
 		sm.SetState(&StateDrag{})
 		return
 	}
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+		sm.SetState(&StateRClick{})
+		return
+	}
 }
+func (s *StateIdle) EndAnimHook(sm *StateMachine) {}
 
 type StateDrag struct {
 	PreviousMousePos Vector
@@ -100,4 +109,15 @@ func (s *StateDrag) Update(sm *StateMachine) {
 		ebiten.SetWindowPosition(winPos.x, winPos.y)
 	}
 	s.PreviousMousePos = mousePos
+}
+func (s *StateDrag) EndAnimHook(sm *StateMachine) {}
+
+type StateRClick struct{}
+
+func (s *StateRClick) Enter(sm *StateMachine) {
+	sm.SetAnim(RightClick)
+}
+func (s *StateRClick) Update(sm *StateMachine) {}
+func (s *StateRClick) EndAnimHook(sm *StateMachine) {
+	sm.SetState(&StateIdle{})
 }
