@@ -75,9 +75,9 @@ Here are the currently supported options:
   -size int
         Size multiplier: make Gura as big as you want (default 1)
   -stop int
-        chance to stop walking, in % (default 40)
+        Chance to stop walking, in % (default 40)
   -walk int
-        chance to start walking, in % (default 5)
+        Chance to start walking, in % (default 5)
   -x int
         X position on screen (default 9999)
   -y int

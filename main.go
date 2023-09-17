@@ -112,8 +112,8 @@ func main() {
 	)
 	flag.IntVar(&xFlag, "x", 9999, "X position on screen")
 	flag.IntVar(&yFlag, "y", 9999, "Y position on screen")
-	flag.IntVar(&WalkChance, "walk", 5, "chance to start walking, in %")
-	flag.IntVar(&StopChance, "stop", 40, "chance to stop walking, in %")
+	flag.IntVar(&WalkChance, "walk", 5, "Chance to start walking, in %")
+	flag.IntVar(&StopChance, "stop", 40, "Chance to stop walking, in %")
 	flag.Parse()
 
 	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
