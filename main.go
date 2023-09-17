@@ -6,13 +6,13 @@ import (
 	"flag"
 	"image"
 	_ "image/png"
-	"log"
 	"math/rand"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"go.imnhan.com/shark/must"
 )
 
 const SPRITE_X = 100
@@ -221,15 +221,12 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
 }
 
 func NewAnim(sprites embed.FS, subdir string) *Anim {
-	files, err := sprites.ReadDir("sprites/" + subdir)
-	PanicIfErr(err)
+	files := must.One(sprites.ReadDir("sprites/" + subdir))
 	var frames []*ebiten.Image
 	for _, direntry := range files {
 		fname := direntry.Name()
-		frame, err := sprites.ReadFile("sprites/" + subdir + "/" + fname)
-		PanicIfErr(err)
-		img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(frame))
-		PanicIfErr(err)
+		frame := must.One(sprites.ReadFile("sprites/" + subdir + "/" + fname))
+		img, _ := must.Two(ebitenutil.NewImageFromReader(bytes.NewReader(frame)))
 		frames = append(frames, img)
 	}
 	return &Anim{frames}
@@ -284,19 +281,11 @@ func main() {
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetWindowFloating(true)
 
-	AppIcon, _, iconerr := image.Decode(bytes.NewReader(IconFile))
-	PanicIfErr(iconerr)
+	AppIcon, _ := must.Two(image.Decode(bytes.NewReader(IconFile)))
 	ebiten.SetWindowIcon([]image.Image{AppIcon})
 
-	err := ebiten.RunGameWithOptions(
+	must.Zero(ebiten.RunGameWithOptions(
 		&game,
 		&ebiten.RunGameOptions{ScreenTransparent: true},
-	)
-	PanicIfErr(err)
-}
-
-func PanicIfErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	))
 }
