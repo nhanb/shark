@@ -14,8 +14,10 @@ type StateMachine struct {
 	animFrameCount int // number of frames in current anim
 	frameIdx       int // frame index in current animation
 	ticks          int // ticks since last animation frame change
+	lastFed        time.Time
+	x, y           int // logical window position
 
-	lastFed time.Time
+	isXYInit bool
 }
 
 func NewStateMachine() *StateMachine {
@@ -39,7 +41,14 @@ func (sm *StateMachine) SetState(s State) {
 	sm.state.Enter(sm)
 }
 func (sm *StateMachine) Update() error {
+	if !sm.isXYInit {
+		sm.x, sm.y = ebiten.WindowPosition()
+		sm.isXYInit = true
+	}
+
 	sm.state.Update(sm)
+
+	ebiten.SetWindowPosition(sm.x, sm.y)
 
 	// Advance to next animation frame
 	sm.ticks += 1
@@ -117,7 +126,7 @@ func (s *StateDrag) Update(sm *StateMachine) {
 	mousePos := GlobalCursorPosition()
 	if mousePos != s.PreviousMousePos {
 		winPos := s.WinStartPos.Add(mousePos.Subtract(s.MouseStartPos))
-		ebiten.SetWindowPosition(winPos.x, winPos.y)
+		sm.x, sm.y = winPos.x, winPos.y
 	}
 	s.PreviousMousePos = mousePos
 }
@@ -198,15 +207,13 @@ func (s *StateWalk) Update(sm *StateMachine) {
 		return
 	}
 
-	x, y := ebiten.WindowPosition()
-	newX := x
+	oldX := sm.x
 	if s.isLeft {
-		newX -= 2
+		sm.x -= 1
 	} else {
-		newX += 2
+		sm.x += 1
 	}
-	fmt.Println(x, "->", newX)
-	ebiten.SetWindowPosition(newX, y)
+	fmt.Println(oldX, "->", sm.x)
 }
 func (s *StateWalk) EndAnimHook(sm *StateMachine) {
 	if randBool(StopChance) {
