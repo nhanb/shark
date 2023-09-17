@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -11,11 +13,14 @@ type StateMachine struct {
 	animFrameCount int // number of frames in current anim
 	frameIdx       int // frame index in current animation
 	ticks          int // ticks since last animation frame change
+
+	lastFed time.Time
 }
 
 func NewStateMachine() *StateMachine {
 	sm := StateMachine{}
 	sm.SetState(&StateIdle{})
+	sm.lastFed = time.Now()
 	return &sm
 }
 
@@ -33,7 +38,14 @@ func (sm *StateMachine) SetState(s State) {
 	sm.state.Enter(sm)
 }
 func (sm *StateMachine) Update() error {
-	sm.state.Update(sm)
+	now := time.Now()
+
+	if now.Sub(sm.lastFed) >= DurationTillHungry {
+		sm.SetState(&StateHungry{})
+		sm.lastFed = now
+	} else {
+		sm.state.Update(sm)
+	}
 
 	// Advance to next animation frame
 	sm.ticks += 1
@@ -66,8 +78,6 @@ type State interface {
 	EndAnimHook(sm *StateMachine)
 }
 
-type StateHungry struct{}
-type StateFeed struct{}
 type StateWalkL struct{}
 type StateWalkR struct{}
 
@@ -119,5 +129,24 @@ func (s *StateRClick) Enter(sm *StateMachine) {
 }
 func (s *StateRClick) Update(sm *StateMachine) {}
 func (s *StateRClick) EndAnimHook(sm *StateMachine) {
+	sm.SetState(&StateIdle{})
+}
+
+type StateHungry struct{}
+
+func (s *StateHungry) Enter(sm *StateMachine) { sm.SetAnim(Hungry) }
+func (s *StateHungry) Update(sm *StateMachine) {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+		sm.SetState(&StateFeed{})
+		return
+	}
+}
+func (s *StateHungry) EndAnimHook(sm *StateMachine) {}
+
+type StateFeed struct{}
+
+func (s *StateFeed) Enter(sm *StateMachine)  { sm.SetAnim(Feeding) }
+func (s *StateFeed) Update(sm *StateMachine) {}
+func (s *StateFeed) EndAnimHook(sm *StateMachine) {
 	sm.SetState(&StateIdle{})
 }

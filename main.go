@@ -48,23 +48,24 @@ type Anim struct {
 
 type Position struct{ x, y int }
 
+var DurationTillHungry time.Duration
+
 type Game struct {
-	CurrentAnim            *Anim
-	CurrentFrame           int
-	Ticks                  int
-	IsDragging             bool
-	PreviousMousePos       Vector
-	WinStartPos            Vector
-	MouseStartPos          Vector
-	Size                   int
-	LastFed                time.Time
-	NanosecondsUntilHungry time.Duration
-	WalkChance             int
-	StopChance             int
-	X                      int
-	Y                      int
-	MaxX                   int
-	MaxY                   int
+	CurrentAnim      *Anim
+	CurrentFrame     int
+	Ticks            int
+	IsDragging       bool
+	PreviousMousePos Vector
+	WinStartPos      Vector
+	MouseStartPos    Vector
+	Size             int
+	LastFed          time.Time
+	WalkChance       int
+	StopChance       int
+	X                int
+	Y                int
+	MaxX             int
+	MaxY             int
 }
 
 type Vector struct{ x, y int }
@@ -101,7 +102,7 @@ func (g *Game) Update() error {
 
 	isHungry := false
 
-	if time.Now().Sub(g.LastFed) >= g.NanosecondsUntilHungry {
+	if time.Now().Sub(g.LastFed) >= DurationTillHungry {
 		// The only allowed interaction when hungry is right-click to feed.
 		isHungry = true
 		g.IsDragging = false
@@ -265,7 +266,7 @@ func main() {
 	var game Game
 	game.CurrentAnim = Idle
 	game.LastFed = time.Now()
-	game.NanosecondsUntilHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
+	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
 	game.Size = sizeFlag
 	game.WalkChance = walkChanceFlag
 	game.StopChance = stopChanceFlag
