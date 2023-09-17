@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -196,6 +197,16 @@ func (s *StateWalk) Update(sm *StateMachine) {
 		sm.SetState(&StateRClick{})
 		return
 	}
+
+	x, y := ebiten.WindowPosition()
+	newX := x
+	if s.isLeft {
+		newX -= 2
+	} else {
+		newX += 2
+	}
+	fmt.Println(x, "->", newX)
+	ebiten.SetWindowPosition(newX, y)
 }
 func (s *StateWalk) EndAnimHook(sm *StateMachine) {
 	if randBool(StopChance) {

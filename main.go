@@ -120,7 +120,7 @@ func main() {
 	ebiten.SetWindowPosition(xFlag, yFlag)
 	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
 	ebiten.SetWindowTitle("Shark!")
-	ebiten.SetWindowDecorated(false)
+	//ebiten.SetWindowDecorated(false)
 	ebiten.SetWindowFloating(true)
 
 	AppIcon, _ := must.Two(image.Decode(bytes.NewReader(IconFile)))
