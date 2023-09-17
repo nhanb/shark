@@ -8,6 +8,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+var screenW, screenH = ebiten.ScreenSizeInFullscreen()
+
 type StateMachine struct {
 	state          State
 	anim           *Anim
@@ -48,6 +50,8 @@ func (sm *StateMachine) Update() error {
 
 	sm.state.Update(sm)
 
+	sm.x = min(max(sm.x, 0), screenW-WindowWidth)
+	sm.y = min(max(sm.y, 0), screenH-WindowHeight)
 	ebiten.SetWindowPosition(sm.x, sm.y)
 
 	// Advance to next animation frame

@@ -49,6 +49,7 @@ type Position struct{ x, y int }
 
 var DurationTillHungry time.Duration
 var WalkChance, StopChance int
+var WindowWidth, WindowHeight int
 
 type Vector struct{ x, y int }
 
@@ -118,9 +119,11 @@ func main() {
 	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
 
 	ebiten.SetWindowPosition(xFlag, yFlag)
-	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
+	WindowWidth = SPRITE_X * sizeFlag
+	WindowHeight = SPRITE_Y * sizeFlag
+	ebiten.SetWindowSize(WindowWidth, WindowHeight)
 	ebiten.SetWindowTitle("Shark!")
-	//ebiten.SetWindowDecorated(false)
+	ebiten.SetWindowDecorated(false)
 	ebiten.SetWindowFloating(true)
 
 	AppIcon, _ := must.Two(image.Decode(bytes.NewReader(IconFile)))
