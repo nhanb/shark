@@ -1,7 +1,8 @@
-image: debian/bullseye
+# Use oldest available OS so we get oldest possible glibc,
+# therefore maximizing compatibility.
+image: debian/oldstable
 
 packages:
-  - golang-1.19
   # The following copied as-is from https://ebiten.org/documents/install.html
   - libc6-dev
   - libglu1-mesa-dev
@@ -14,13 +15,12 @@ packages:
   - libasound2-dev
   - pkg-config
 
-repositories:
-  backports: http://deb.debian.org/debian bullseye-backports main
-
 tasks:
   - build: |
+      curl -L 'https://go.dev/dl/go1.21.1.linux-amd64.tar.gz' > go.tar.gz
+      tar -xf go.tar.gz
+      export PATH="$PATH:$PWD/go/bin"
       cd shark
-      export PATH="$PATH:/usr/lib/go-1.19/bin"
       go version
       make linux
       make windows
