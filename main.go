@@ -248,8 +248,6 @@ func init() {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-
 	var sizeFlag, xFlag, yFlag, walkChanceFlag, stopChanceFlag int
 	var secondsUntilHungryFlag int64
 	flag.IntVar(
@@ -284,14 +282,16 @@ func main() {
 	ebiten.SetWindowSize(SPRITE_X*sizeFlag, SPRITE_Y*sizeFlag)
 	ebiten.SetWindowTitle("Shark!")
 	ebiten.SetWindowDecorated(false)
-	ebiten.SetScreenTransparent(true)
 	ebiten.SetWindowFloating(true)
 
 	AppIcon, _, iconerr := image.Decode(bytes.NewReader(IconFile))
 	PanicIfErr(iconerr)
 	ebiten.SetWindowIcon([]image.Image{AppIcon})
 
-	err := ebiten.RunGame(&game)
+	err := ebiten.RunGameWithOptions(
+		&game,
+		&ebiten.RunGameOptions{ScreenTransparent: true},
+	)
 	PanicIfErr(err)
 }
 
