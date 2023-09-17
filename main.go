@@ -285,7 +285,7 @@ func main() {
 	ebiten.SetWindowIcon([]image.Image{AppIcon})
 
 	must.Zero(ebiten.RunGameWithOptions(
-		&game,
+		NewStateMachine(),
 		&ebiten.RunGameOptions{ScreenTransparent: true},
 	))
 }
