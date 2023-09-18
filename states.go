@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -211,13 +210,11 @@ func (s *StateWalk) Update(sm *StateMachine) {
 		return
 	}
 
-	oldX := sm.x
 	if s.isLeft {
 		sm.x -= 1
 	} else {
 		sm.x += 1
 	}
-	fmt.Println(oldX, "->", sm.x)
 }
 func (s *StateWalk) EndAnimHook(sm *StateMachine) {
 	if randBool(StopChance) {
