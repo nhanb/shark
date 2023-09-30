@@ -118,6 +118,7 @@ func main() {
 
 	DurationTillHungry = time.Duration(secondsUntilHungryFlag) * 1_000_000_000
 
+	ebiten.SetTPS(60)
 	ebiten.SetWindowPosition(xFlag, yFlag)
 	WindowWidth = SPRITE_X * sizeFlag
 	WindowHeight = SPRITE_Y * sizeFlag
