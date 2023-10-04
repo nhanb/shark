@@ -133,7 +133,9 @@ func (s *StateDrag) Update(sm *StateMachine) {
 	}
 	s.PreviousMousePos = mousePos
 }
-func (s *StateDrag) EndAnimHook(sm *StateMachine) {}
+func (s *StateDrag) EndAnimHook(sm *StateMachine) {
+	syncWinPos(sm)
+}
 
 type StateRClick struct{}
 
@@ -217,7 +219,24 @@ func (s *StateWalk) Update(sm *StateMachine) {
 	}
 }
 func (s *StateWalk) EndAnimHook(sm *StateMachine) {
+	// On KDE, our window isn't allowed to walk over a vertical taskbar
+	// ("panel" in KDE parlance), so when gura walks agains a taskbar, the
+	// in-game position (sm.x) will get out of sync with the actual window
+	// position. Therefore, we must run a sync:
+	syncWinPos(sm)
+
 	if randBool(StopChance) {
 		sm.SetState(&StateIdle{})
+	}
+}
+
+// Sometimes the sm.x/y doesn't match the window's actual position on screen.
+// Run this at the end of States that might end up in that situation.
+func syncWinPos(sm *StateMachine) {
+	actualX, actualY := ebiten.WindowPosition()
+	if actualX != sm.x || actualY != sm.y {
+		//fmt.Printf("ingame: %d,%d - actual: %d,%d\n", sm.x, sm.y, actualX, actualY)
+		sm.x = actualX
+		sm.y = actualY
 	}
 }
